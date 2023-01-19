@@ -13,7 +13,7 @@ import space.gavinklfong.demo.streamapi.repos.ProductRepo;
 import javax.transaction.Transactional;
 import java.time.LocalDate;
 import java.time.Month;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -88,7 +88,62 @@ public class AppCommandRunner implements CommandLineRunner {
 		for (Product product : resultEx4) {
 			log.info(product.toString());
 		}
-
+		log.info("Exercise 5");
+		log.info("-----------------------------------");
+		Optional<Product> resultEx5 = productRepos.findAll().stream()
+				.filter(p -> p.getCategory().equalsIgnoreCase("Books"))
+				.min(Comparator.comparing(Product::getPrice));
+		if (resultEx5.isPresent()){
+			log.info(resultEx5.toString());
+		}
+		log.info("Exercise 6");
+		log.info("-----------------------------------");
+		List<Order> resultEx6 = orderRepos.findAll().stream()
+				.sorted(Comparator.comparing(Order::getOrderDate).reversed())
+				.limit(3)
+				.collect(Collectors.toList());
+		for (Order order : resultEx6) {
+			log.info(order.toString());
+		}
+		log.info("Exercise 7");
+		log.info("-----------------------------------");
+		List<Product> resultEx7 = orderRepos.findAll().stream()
+				.filter(p -> p.getOrderDate().compareTo(LocalDate.of(2021, 3, 15)) == 0)
+				.peek(o -> System.out.println(o.toString()))
+				.flatMap(o -> o.getProducts().stream())
+				.distinct()
+				.collect(Collectors.toList());
+		for (Product product : resultEx7) {
+			log.info(product.toString());
+		}
+		log.info("Exercise 8");
+		log.info("-----------------------------------");
+		Double resultEx8 = orderRepos.findAll().stream()
+				.filter(o -> o.getOrderDate().compareTo(LocalDate.of(2021, 2, 1)) >= 0)
+				.filter(o -> o.getOrderDate().compareTo(LocalDate.of(2021, 3, 1)) < 0)
+				.flatMap(o -> o.getProducts().stream())
+				.mapToDouble(p -> p.getPrice())
+				.sum();
+		log.info(resultEx8.toString());
+		log.info("Exercise 9");
+		log.info("-----------------------------------");
+		OptionalDouble resultEx9 = orderRepos.findAll().stream()
+				.filter(o -> o.getOrderDate().isEqual(LocalDate.of(2021, 3, 14)))
+				.flatMap(o -> o.getProducts().stream())
+				.mapToDouble(p -> p.getPrice())
+				.average();
+		log.info("Exercise 10");
+		log.info("-----------------------------------");
+		DoubleSummaryStatistics statistics = productRepos.findAll().stream()
+				.filter(p -> p.getCategory().equalsIgnoreCase("Books"))
+				.mapToDouble(p -> p.getPrice())
+				.summaryStatistics();
+		System.out.println(String.format("count = %1d, average = %2$f, max = %3$f, min = %4$f, sum = %5$f",
+				statistics.getCount(),
+				statistics.getAverage(),
+				statistics.getMax(),
+				statistics.getMin(),
+				statistics.getSum()));
 	}
 
 }
