@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
+import space.gavinklfong.demo.streamapi.models.Customer;
 import space.gavinklfong.demo.streamapi.models.Order;
 import space.gavinklfong.demo.streamapi.models.Product;
 import space.gavinklfong.demo.streamapi.repos.CustomerRepo;
@@ -14,6 +15,7 @@ import javax.transaction.Transactional;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -132,6 +134,9 @@ public class AppCommandRunner implements CommandLineRunner {
 				.flatMap(o -> o.getProducts().stream())
 				.mapToDouble(p -> p.getPrice())
 				.average();
+		if (resultEx9.isPresent()){
+			log.info(resultEx9.toString());
+		}
 		log.info("Exercise 10");
 		log.info("-----------------------------------");
 		DoubleSummaryStatistics statistics = productRepos.findAll().stream()
@@ -144,6 +149,46 @@ public class AppCommandRunner implements CommandLineRunner {
 				statistics.getMax(),
 				statistics.getMin(),
 				statistics.getSum()));
+		log.info("Exercise 11");
+		log.info("-----------------------------------");
+		Map<Long, Integer> resultEx11 = orderRepos.findAll().stream()
+				.collect(Collectors.toMap(
+						order -> order.getId(),
+						order -> order.getProducts().size()
+				));
+		log.info(resultEx11.toString());
+		log.info("Exercise 12");
+		log.info("-----------------------------------");
+		Map<Customer, List<Order>> resultEx12 = orderRepos.findAll().stream()
+				.collect(Collectors.groupingBy(Order::getCustomer));
+		log.info(resultEx12.toString());
+		log.info("Exercise 13");
+		log.info("-----------------------------------");
+		Map<Order, Double> resultEx13 = orderRepos.findAll().stream()
+				.collect(Collectors.toMap(
+						Function.identity(),
+						order -> order.getProducts().stream()
+								.mapToDouble(p -> p.getPrice()).sum()
+				));
+		log.info(resultEx13.toString());
+		log.info("Exercise 14");
+		log.info("-----------------------------------");
+		Map<String, List<String>> resultEx14 = productRepos.findAll()
+				.stream()
+				.collect(Collectors.groupingBy(
+						Product::getCategory,
+						Collectors.mapping(product -> product.getName(), Collectors.toList())
+				));
+		log.info(resultEx14.toString());
+		log.info("Exercise 15");
+		log.info("-----------------------------------");
+		Map<String, Optional<Product>> resultEx15 = productRepos.findAll()
+				.stream()
+				.collect(Collectors.groupingBy(
+						Product::getCategory,
+						Collectors.maxBy(Comparator.comparing(Product::getPrice))
+				));
+		log.info(resultEx15.toString());
 	}
 
 }
